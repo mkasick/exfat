@@ -301,13 +301,24 @@ static int fuse_exfat_utimens(const char* path, const struct timespec tv[2])
 
 static int fuse_exfat_chmod(const char* path, mode_t mode)
 {
-	const mode_t VALID_MODE_MASK = S_IFREG | S_IFDIR |
+	const mode_t VALID_MODE_MASK = S_IFREG | S_IFDIR | S_ISVTX |
 			S_IRWXU | S_IRWXG | S_IRWXO;
+
+	struct exfat_node* node;
+	int rc;
 
 	exfat_debug("[%s] %s 0%ho", __func__, path, mode);
 	if (mode & ~VALID_MODE_MASK)
 		return -EPERM;
-	return 0;
+
+	rc = exfat_lookup(&ef, &node, path);
+	if (rc != 0)
+		return rc;
+
+	exfat_chmod(node, mode);
+	rc = exfat_flush_node(&ef, node);
+	exfat_put_node(&ef, node);
+	return rc;
 }
 
 static int fuse_exfat_chown(const char* path, uid_t uid, gid_t gid)

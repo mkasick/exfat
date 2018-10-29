@@ -1172,6 +1172,15 @@ void exfat_update_mtime(struct exfat_node* node)
 	node->is_dirty = true;
 }
 
+void exfat_chmod(struct exfat_node* node, mode_t mode)
+{
+	if (mode & S_ISVTX)
+		node->attrib |=  EXFAT_ATTRIB_ARCH;
+	else
+		node->attrib &= ~EXFAT_ATTRIB_ARCH;
+	node->is_dirty = true;
+}
+
 const char* exfat_get_label(struct exfat* ef)
 {
 	return ef->label;

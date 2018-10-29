@@ -29,10 +29,11 @@ void exfat_stat(const struct exfat* ef, const struct exfat_node* node,
 		struct stat* stbuf)
 {
 	memset(stbuf, 0, sizeof(struct stat));
+	mode_t sticky = node->attrib & EXFAT_ATTRIB_ARCH ? S_ISVTX : 0;
 	if (node->attrib & EXFAT_ATTRIB_DIR)
-		stbuf->st_mode = S_IFDIR | (0777 & ~ef->dmask);
+		stbuf->st_mode = S_IFDIR | sticky | (0777 & ~ef->dmask);
 	else
-		stbuf->st_mode = S_IFREG | (0777 & ~ef->fmask);
+		stbuf->st_mode = S_IFREG | sticky | (0777 & ~ef->fmask);
 	stbuf->st_nlink = 1;
 	stbuf->st_uid = ef->uid;
 	stbuf->st_gid = ef->gid;
